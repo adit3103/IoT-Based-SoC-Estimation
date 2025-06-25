@@ -1,0 +1,25 @@
+# Components List for IoT-Based State of Charge (SoC) Estimator Project
+
+This project uses a combination of sensors, microcontrollers, and display modules to estimate the State of Charge (SoC) of a LiFePO₄ battery using voltage mapping, Coulomb Counting, and Kalman Filter techniques.
+
+-----------------------------------------------------------------------------------------|
+| Component                    | Description / Purpose                        | Quantity |
+-----------------------------------------------------------------------------------------|
+| Arduino Uno R3               | Microcontroller for processing sensor data   | 1        |
+| LiFePO₄ Battery (3.2V, 2.2Ah)| Target battery for SoC estimation            | 1        |
+| ACS712 Current Sensor        | Measures current drawn from battery          | 1        |
+| Voltage Divider or Sensor    | Measures battery voltage                     | 1        |
+| INA219 (optional)            | High-precision voltage + current sensor      | 1        |
+| I2C LCD Display (16x2)       | Displays real-time SoC, Voltage, Current     | 1        |
+| Resistors (1kΩ, 10kΩ, etc.)  | Used in voltage divider circuit              | As needed|
+| Breadboard                   | Prototyping circuit assembly                 | 1        |
+| Jumper Wires (Male-Male)     | Wiring between components                    | 10+      |
+| USB Cable (Type B)           | Uploading code to Arduino                    | 1        |
+| Laptop / PC with Arduino IDE | For code development and uploading           | 1        |
+-----------------------------------------------------------------------------------------|
+
+# Optional Tools:
+- Multimeter (for calibration and testing)
+- Power supply or charger for LiFePO₄ battery
+- Serial Monitor (via Arduino IDE) for data logging
+
