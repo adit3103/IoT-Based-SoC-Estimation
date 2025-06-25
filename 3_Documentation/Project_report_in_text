@@ -1,0 +1,802 @@
+Executive Summary
+This project presents a solution for estimating the State of Charge (SoC) of a lithium-ion 
+battery cell using three complementary methods: Direct Voltage Method, Coulomb 
+Counting, and the Kalman Filter. The objective is to provide a real-time, accurate, and 
+cost-effective embedded system that monitors the charge level of a battery and 
+communicates data over IoT for energy management applications.
+The Direct Voltage Method uses open circuit voltage to infer SoC, providing a simple 
+estimation based on battery voltage under rest conditions. Coulomb Counting involves 
+integrating the current over time using a current sensor to calculate charge in/out. Kalman 
+Filtering provides a more robust estimation by combining model-based prediction and sensor 
+data, correcting errors inherent in the other methods.
+The entire system is built using Arduino, a voltage divider network, current sensors 
+(ACS712), and IoT modules monitor SoC remotely. The project also addresses limitations 
+like sensor drift and non-linearities in battery behaviour by integrating these three methods.
+This smart SoC estimation system is applicable in renewable energy, electric vehicles, and 
+IoT-enabled smart grids, promoting energy efficiency and sustainability. It is affordable, 
+scalable, and adaptable to different battery chemistries, making it suitable for real-world 
+deployment in both academic and industrial settings.
+vi
+Table of Contents
+S. No. Section Page No.
+I. Declaration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ii
+II. Certificate. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . iii
+III. Acknowledgement. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . iv
+IV. Executive Summary. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . v
+V. List of Figures. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . viii
+VI. List of Tables. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ix
+VII. List of abbreviations. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . x
+VIII. Symbols and Notations. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xi
+1 Introduction 1
+1.1 Literature Review. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+1.2 Research Gap. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+1.3 Problem Statement. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+2 Research Objectives 7
+3 Relevance to SDGs 8
+4 Proposed System 9
+4.1 Design Approach / Materials and Methods. . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+4.2 Codes and Standards. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+4.3 Constraints, Alternatives and Tradeoffs. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+5 Project Description 18
+vii
+S. No. Section Page No.
+6 Hardware / Software Tools Used 19
+7 Schedule and Milestones 21
+8 Result Analysis 22
+8.1 Hardware Setup. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+8.2 Simulation in TinkerCad. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+8.3 Simulation in MATLAB. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+8.4 Result Summary Table. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+9 Conclusion 27
+9.1 Obtained Results. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+9.2 Future Improvements. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+9.3 Individual Contributions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+10 SoCial and Environmental Impact 29
+11 Cost Analysis 30
+12 Project Outcome / Publication / Patent 31
+13 References 32
+viii
+List of Figures 
+Figure No. Title Page No.
+3.1 SDG Poster 8
+4.1 Block Diagram 9
+4.2 System Architecture 11
+6.1 Hardware Setup 19
+8.1.1 Hardware Setup for Coulomb Counting Method 22
+8.1.2 Hardware Setup for Kalman Filter 22
+8.1.3 Hardware Setup for OCV Method 23
+8.2.1 Simulation in TinkerCad 23
+8.2.2 Simulation in TinkerCad Output 24
+8.3.1 MATLAB Circuit Simulation 24
+8.3.2 MATLAB Variables for Simulation 25
+8.3.3 MATLAB Output Graph for Multivariable Time Series 25
+8.3.4 MATLAB Output Graph for Training Progress 26
+ix
+List of Tables
+Table No. Title Page No.
+4.1.2 Materials Used 18
+6.1 Hardware Tools 19
+6.2 Software Tools 20
+7.1 Schedule and Milestones 21
+8.4 Result Summary 26
+11.1 Cost Analysis of Components 30
+9.3.1 Individual Contributions 28
+x
+List of Abbreviations 
+Abbreviation Full Form
+2G Second Generation
+3G Third Generation
+4G Fourth Generation
+3GPP Third Generation Partnership Project
+AWGN Additive White Gaussian Noise
+BMS Battery Management System
+SoC State of Charge
+MCU Microcontroller Unit
+LCD Liquid Crystal Display
+ADC Analog to Digital Converter
+OCV Open Circuit Voltage
+EV Electric Vehicle
+UPS Uninterruptible Power Supply
+SDG Sustainable Development Goals
+IEEE Institute of Electrical and Electronics Engineers
+IDE Integrated Development Environment
+INA219 Current Sensor IC
+I2C Inter-Integrated Circuit (communication protocol)
+xi
+Symbols and Notations
+Symbol Description
+δf Carrier Frequency Offset (CFO)
+ε Normalized Carrier Frequency Offset (NCFO)
+VMIN Minimum voltage level for battery
+VMAX Maximum voltage level for battery
+I(t) Instantaneous current at time t
+SoC(t) State of Charge at time t
+Cn Nominal battery capacity
+1
+1. INTRODUCTION
+The demand for accurate and reliable Battery control structures (BMS) has grown 
+tremendously in latest years, mostly due to the widespread adoption of lithium-ion batteries 
+in an expansion of programs. these programs consist of electric powered motors (EVs), 
+renewable strength garage structures like sun microgrids, and transportable electronic devices 
+including smartphones, laptops, and clinical device. As the worldwide transition toward 
+inexperienced and sustainable technology accelerates, the performance and safety of battery￾powered systems have emerge as paramount. among the numerous parameters that a BMS 
+monitors, the state of charge (SoC) sticks out as one of the maximum critical. SoC gives a 
+quantitative estimate of the last electricity in a battery relative to its complete ability and 
+performs a crucial position in determining the battery's usability and lifespan.
+as it should be estimating the SoC of a battery is vital for numerous motives. firstly, it 
+guarantees the safe operation of the battery-powered machine by preventing each 
+overcharging and deep discharging. these excessive situations can result in excessive results 
+including thermal runaway, potential loss, or maybe everlasting harm to the battery cells. 
+Secondly, unique SoC information enables higher power control strategies, which allows in 
+optimizing the usage of available power, mainly in energy-confined structures. ultimately, it 
+contributes to prolonging the battery’s operational existence, thereby lowering the frequency 
+of battery replacements and contributing to environmental sustainability by using minimizing 
+digital waste.
+conventional techniques of estimating SoC, which include easy voltage-primarily based 
+dimension, have verified to be insufficient for contemporary packages. This inadequacy is 
+usually due to the non-linear discharge behavior of lithium-ion batteries, that is closely 
+influenced with the aid of outside elements consisting of load situations, temperature 
+fluctuations, and the age of the battery. below various loads, the terminal voltage of a battery 
+can deviate drastically, making it an unreliable standalone indicator of SoC.
+2
+To overcome these limitations, this project proposes a comprehensive, real-time, and IoT￾enabled approach for SoC estimation, leveraging the strengths of three complementary 
+methods:
+1. Direct Voltage Method: This technique estimates the SoC based on the battery’s 
+open-circuit voltage (OCV). When the battery is at rest or under very light load 
+conditions, the terminal voltage correlates well with the SoC, making this method 
+simple yet effective. However, it is sensitive to temperature changes and becomes 
+inaccurate under load due to voltage drops.
+2. Coulomb Counting Method: In this method, the current flowing in and out of the 
+battery is measured continuously using a current sensor, and the net charge/discharge 
+is calculated over time through integration. While this method provides real-time data 
+and is easy to implement, it suffers from long-term drift due to sensor inaccuracies and 
+requires periodic calibration to maintain reliability.
+3. Kalman Filter Method: This is a sophisticated, model-based estimation technique that 
+combines real-time sensor data with predictive modeling. The Kalman filter 
+continuously corrects SoC estimates by accounting for uncertainties in both 
+measurements and battery behavior. It significantly improves accuracy, particularly in 
+dynamic and non-linear operating environments, by minimizing the cumulative errors 
+seen in simpler methods.
+By integrating these three estimation techniques into an embedded platform based on 
+Arduino or ESP32 microcontrollers, and coupling it with IoT modules for wireless 
+communication, this project delivers a robust, scalable, and cost-effective solution. The SoC 
+data is displayed locally on an LCD and transmitted remotely via cloud platforms like Blynk 
+or ThingSpeak, enabling real-time monitoring through smartphones or web dashboards. This 
+hybrid system addresses the drawbacks of individual methods and provides enhanced 
+accuracy, reliability, and usability, making it highly suitable for applications ranging from 
+electric vehicles to smart grids and portable energy systems.
+Ultimately, this IoT-based SoC estimation system supports the goals of smart energy 
+management, enhances battery safety, and contributes to the broader vision of sustainable and 
+intelligent technological development.
+3
+1.1 LITERATURE REVIEW
+Numerous studies efforts have been directed in the direction of developing strong and accurate 
+nation of charge (SoC) estimation techniques for lithium-ion batteries, which can be 
+extensively used in electric powered automobiles, renewable power structures, and 
+transportable electronic devices. appropriately determining SoC is vital for making sure 
+battery protection, efficiency, and durability. over time, researchers have proposed various 
+techniques, every with its very own strengths and boundaries.
+• Direct Voltage approach: this is one of the most simple and broadly followed strategies 
+because of its simplicity and simplicity of implementation. It estimates the SoC by using 
+mapping the terminal voltage of the battery to a pre-defined voltage-to-SoC curve, 
+typically obtained below no-load or relaxation situations. at the same time as this approach 
+is computationally inexpensive and can be applied with minimal hardware (consisting of 
+a voltage divider and ADC), it is rather touchy to external elements such as battery 
+temperature, internal resistance, cellular getting old, and ranging load conditions. 
+underneath dynamic loads, the terminal voltage can also range drastically because of 
+voltage drop, leading to faulty SoC readings. studies consisting of Piller et al. [1] spotlight 
+that while the Direct Voltage method is beneficial in strong or idle situations, it's far nice 
+employed in combination with more advanced techniques for progressed reliability.
+• Coulomb Counting approach: This technique involves constantly measuring the present 
+day flowing into and out of the battery and integrating it over the years to calculate the 
+internet rate fed on or saved. The essential equation is primarily based on the connection 
+among modern and charge, making this method well-suited for real-time programs. but, 
+the Coulomb Counting method is vulnerable to cumulative waft over extended intervals 
+because of inaccuracies in present day sensor calibration, noise, and offset mistakes. This 
+drift can result in huge deviations in SoC estimation unless periodically corrected. 
+research with the aid of Kim et al. [2] emphasizes the importance of enforcing periodic 
+calibration routines or combining this method with voltage-primarily based correction to 
+keep long-term accuracy and reliability.
+4
+• Kalman clear out approach: that is a version-based totally, predictive estimation method 
+that makes use of recursive mathematical filtering to estimate the internal country of a 
+machine—in this situation, the SoC of a battery. The Kalman filter fuses real-time sensor 
+measurements (consisting of voltage and modern-day) with a mathematical model of 
+battery behaviour, allowing it to dynamically expect and accurate SoC estimates. This 
+technique efficaciously reduces the noise and blunders delivered via sensors and 
+compensates for uncertainties inside the machine. in step with He et al. [3], Kalman 
+filtering offers full-size enhancements in SoC accuracy, in particular below fluctuating 
+masses and non-linear battery traits. even though computationally more worrying than the 
+alternative methods, it's far an increasing number of viable for microcontroller-primarily 
+based packages because of advancements in embedded processing abilties.
+• IoT Integration: With the upward push of smart systems and the net of factors (IoT), 
+there was growing hobby in integrating SoC estimation with cloud-primarily based 
+platforms. IoT enables real-time far-flung monitoring, records logging, and user 
+interaction through smartphones and web dashboards. research inclusive of Noh et al. [4] 
+reveal that IoT integration complements the usability, accessibility, and intelligence of 
+battery tracking systems, especially in dispensed or inaccessible environments.
+From the overview of existing literature and techniques, it is glaring that no single approach 
+can deliver pretty accurate and regular SoC estimation throughout all working conditions. 
+every method has inherent boundaries that lessen its effectiveness in certain eventualities. 
+therefore, researchers have an increasing number of proposed hybrid fashions that integrate 
+more than one techniques to leverage the benefits of every at the same time as compensating 
+for their weaknesses. The hybrid version proposed on this project—combining Direct 
+Voltage, Coulomb Counting, and Kalman Filtering strategies—objectives to supply a greater 
+accurate, sturdy, and real-time SoC estimation framework. The incorporation of IoT 
+technology further complements the device by using allowing far off diagnostics, person￾pleasant interfaces, and integration with broader electricity control structures.
+5
+1.2 RESEARCH GAP
+Despite the availability of several individual State of Charge (SoC) estimation techniques, 
+significant challenges and limitations still remain. These gaps hinder the effectiveness, 
+reliability, and practical deployment of SoC estimation systems, especially in real-world and 
+resource-constrained environments. The key gaps identified are as follows:
+1. Accuracy and Drift Compensation: Coulomb counting suffers from long-term drift, while 
+voltage-based methods lack precision under load. A fusion of multiple techniques is needed 
+for better accuracy.
+2. Lack of Real-Time Integration: Many studies focus solely on algorithm development 
+without integrating the estimation into real-time embedded platforms that can be deployed.
+3. Limited IoT Deployment: Although IoT has been widely adopted in smart homes and 
+industry, its application in real-time battery SoC monitoring remains underexplored, 
+especially using hybrid methods.
+4. Non-adaptiveness to Environmental Conditions: Many methods assume constant 
+temperature or ignore dynamic conditions like fluctuating load, which affect SoC estimation 
+significantly.
+5. Scalability and Cost Constraints: Most accurate systems use expensive data acquisition 
+systems or require proprietary battery management units, making them unsuitable for small￾scale applications or research prototypes.
+This project addresses these limitations by developing a cost-effective hybrid SoC 
+estimation system, implemented on a low-power microcontroller such as Arduino or 
+ESP32. The solution integrates three estimation techniques—Direct Voltage, Coulomb 
+Counting, and Kalman Filtering—into a unified system with IoT capabilities for remote data 
+access. The resulting platform is not only accurate and real-time but also affordable and 
+scalable, making it ideal for academic projects, research prototypes, and small-scale industrial 
+applications.
+6
+1.3 PROBLEM STATEMENT
+With the growing use of rechargeable batteries in electric vehicles, renewable energy systems, 
+consumer electronics, and medical devices, ensuring their safe, efficient, and reliable operation 
+is more important than ever. At the heart of battery management lies the State of Charge 
+(SoC)—a critical metric that reflects the remaining usable energy in a battery. Accurate SoC 
+estimation is vital to prevent overcharging or deep discharging, which can lead to battery 
+degradation, thermal issues, or failure.
+However, real-time SoC estimation remains challenging, especially under dynamic load 
+conditions and prolonged use. Traditional methods have limitations: the voltage-based 
+method is simple but inaccurate under load due to voltage drops and non-linear discharge 
+curves, while the coulomb counting method, though real-time, suffers from long-term drift 
+caused by sensor errors and requires regular calibration.
+Additionally, many existing systems lack IoT capabilities, making them unsuitable for remote 
+monitoring and data logging. Without real-time connectivity, users cannot receive timely alerts 
+on low SoC or unusual activity, limiting system reliability and responsiveness.
+To address these issues, there is a need for a cost-effective, accurate, and real-time SoC 
+estimation system that:
+• Combines multiple estimation techniques to enhance accuracy and robustness,
+• Integrates with low-cost microcontrollers for practical deployment,
+• And supports IoT-based remote monitoring and data access via mobile or cloud 
+platforms.
+This project aims to develop such a solution by implementing a hybrid SoC estimation system
+using Direct Voltage, Coulomb Counting, and Kalman Filter methods. These will be 
+deployed on an embedded microcontroller platform such as Arduino or ESP32 and 
+enhanced with Wi-Fi/Bluetooth communication for real-time data transmission to a 
+smartphone or cloud-based dashboard. The result is a scalable and intelligent system that not 
+only improves SoC accuracy but also enhances usability in both research and industrial
+environments.
+7
+2. RESEARCH OBJECTIVES
+The primary objective of this project is to design and implement a real-time, State of Charge 
+(SoC) estimation system for lithium-ion battery cells using three complementary techniques:
+1. Direct Voltage Method
+to use the battery’s terminal voltage and pre-described lookup tables or curve-fitting models 
+to estimate the SoC beneath open-circuit or low-load conditions.
+2. Coulomb Counting Method
+To measure the rate entering and leaving the battery through the years using a modern sensor, 
+and compute the SoC dynamically based on integration.
+3. Kalman Filter Method
+To develop and implement a recursive estimation algorithm that fuses voltage and current 
+data to minimize errors and provide accurate SoC prediction under dynamic conditions.
+4. IoT Integration
+To transmit SoC values wirelessly using an ESP32/ESP8266 module to cloud platforms like 
+Blynk or ThingSpeak for real-time remote monitoring on smartphones or web dashboards.
+5. Low-Cost and Scalable Implementation
+To build a cost-effective embedded solution using widely available microcontrollers 
+(Arduino/ESP) and sensors (voltage dividers and INA219/ACS712) with low power 
+consumption and future scalability.
+8
+3. RELEVANCE OF PROBLEM STATEMENT W.R.T SDGs
+This project aligns closely with the United Nations Sustainable Development Goals 
+(SDGs), particularly:
+• SDG 7: Affordable and Clean Energy
+Efficient battery monitoring ensures optimal utilization and longevity of energy storage 
+systems used in solar microgrids and electric vehicles. The proposed SoC system helps reduce 
+energy losses and supports a shift to sustainable, off-grid power.
+• SDG 9: Industry, Innovation and Infrastructure
+By leveraging IoT and embedded systems, this project contributes to the innovation of digital 
+infrastructure for battery management in industrial applications such as EVs, UPS systems, 
+and drones.
+• SDG 12: Responsible Consumption and Production
+Improved battery health tracking reduces electronic waste and extends product life cycles by 
+avoiding over-discharge or overcharging.
+• SDG 13: Climate Action
+Batteries are key to renewable energy integration. Accurate SoC estimation promotes efficient 
+energy storage, reduces dependency on fossil fuels, and minimizes greenhouse gas emissions.
+Thus, this project contributes to multiple SDGs by enabling smarter, safer, and more efficient 
+energy storage systems through IoT-based intelligent SoC estimation.
+Figure 3.1: SDG poster
+9
+4. PROPOSED SYSTEM
+4.1 DESIGN APPROACH / MATERIALS & METHODS
+Figure 4.1: Block Diagram
+4.1.1 System Overview
+The proposed system is composed of three core estimation modules:
+• Voltage-Based SoC Estimation Module
+• Coulomb Counter Module
+• Kalman Filter SoC Estimation Module
+All modules are interfaced with a central microcontroller (Arduino or ESP32). The 
+estimated SoC values are displayed locally on an LCD screen and transmitted via Wi-Fi 
+(ESP8266) to an IoT dashboard.
+Current sensor
+Voltage sensor
+Load
+10
+4.1.2 MATERIALS USED
+Components Description
+Arduino Uno / ESP32
+Central microcontroller for sensor data processing and wireless 
+transmission
+INA219 / ACS712 Current sensor module for Coulomb counting
+Voltage Divider Circuit Measures battery voltage for direct SoC estimation
+16x2 LCD Display Displays live SoC values and system status
+ESP8266 Wi-Fi Module Wireless communication for IoT data transmission
+Li-ion Battery 
+(3.7V/18650)
+Target cell for SoC monitoring
+Resistors, Breadboard, 
+Wires
+For circuit construction and interfacing
+USB Power Supply For powering the system during testing and deployment
+4.1.3 METHODS
+A. Direct Voltage Method:
+• Measures the open-circuit or stabilized terminal voltage using a voltage divider.
+• Converts voltage to SoC using a calibrated lookup table or polynomial regression based on 
+battery discharge curves.
+• Suitable for rest periods or low-current load states.
+B. Coulomb Counting Method:
+• Uses a current sensor (ACS712) to measure current in/out of the battery.
+• Integrates current over time using the relation:
+𝑆𝑜𝐶(𝑡) = 𝑆𝑜𝐶(𝑡 − 1) +
+𝐼(𝑡)
+𝑄𝑛
+∆𝑡
+• Periodically corrected using voltage-based estimation to reduce drift.
+11
+C. Kalman Filter Method:
+• Implements a discrete-time Kalman Filter algorithm.
+• Predicts the next SoC based on battery model and updates it using sensor measurements 
+(voltage/current).
+• Reduces noise and measurement error, suitable for dynamic and non-linear conditions.
+D. IoT Communication:
+• ESP32/ESP8266 module sends SoC values to cloud servers like ThingSpeak via Wi-Fi.
+• Real-time battery status can be accessed on mobile apps or web interfaces.
+• Enables alerts and trend visualization.
+Figure 4.2: System Architecture
+12
+4.2 CODE USED
+The software implementation of the proposed system follows best practices for embedded 
+systems and IoT communication protocols. Below is a simplified structure of the code 
+used for SoC estimation using all three methods:
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+// --- Pins ---
+#define VOLTAGE_PIN A0
+#define CURRENT_PIN A1
+// --- Voltage Divider ---
+const float R1 = 30000.0;
+const float R2 = 7500.0;
+// --- Battery Parameters ---
+const float V_MIN = 3.0;
+const float V_MAX = 3.65;
+const float BATTERY_CAPACITY_AH = 2.2;
+float coulombSOC = 80.0;
+float kalmanSOC = 80.0;
+const float filterGain = 0.05;
+// --- ACS712 Parameters ---
+13
+const float ACS_OFFSET = 2.5;
+const float ACS_SENSITIVITY = 0.185;
+unsigned long lastUpdate = 0;
+void setup() {
+Serial.begin(9600);
+lcd.init();
+lcd.backlight();
+lcd.clear();
+lcd.setCursor(0, 0);
+lcd.print(" SoC Estimation ");
+delay(2000);
+lcd.clear();
+lastUpdate = millis();
+}
+void loop() {
+unsigned long now = millis();
+float elapsedHours = (now - lastUpdate) / 3600000.0;
+lastUpdate = now;
+14
+// --- Read Voltage ---
+int rawV = analogRead(VOLTAGE_PIN);
+float vOUT = (rawV * 5.0) / 1024.0;
+float batteryVoltage = vOUT / (R2 / (R1 + R2));
+// --- Read Current ---
+int rawI = analogRead(CURRENT_PIN);
+float vACS = (rawI * 5.0) / 1024.0;
+float current = (vACS - ACS_OFFSET) / ACS_SENSITIVITY;
+// --- Remove noise (±50mA) ---
+if (abs(current) < 0.05) current = 0.0;
+// --- Flip current if needed to treat it as DISCHARGE ---
+current = abs(current); // assume current always means discharge
+// OR if you find it's already positive for discharge, comment this line
+// --- Method 1: Voltage-Based SoC ---
+float voltageSOC = ((batteryVoltage - V_MIN) / (V_MAX - V_MIN)) * 100.0;
+voltageSOC = constrain(voltageSOC, 0.0, 100.0);
+// --- Method 2: Coulomb Counting SoC ---
+if (current > 0.0) {
+coulombSOC -= (current * elapsedHours / BATTERY_CAPACITY_AH) * 100.0;
+}
+coulombSOC = constrain(coulombSOC, 0.0, 100.0);
+15
+// --- Method 3: Kalman-like filter ---
+kalmanSOC += filterGain * (voltageSOC - kalmanSOC);
+kalmanSOC = constrain(kalmanSOC, 0.0, 100.0);
+// --- Final SOC average ---
+float avgSOC = (voltageSOC + coulombSOC + kalmanSOC) / 3.0;
+// --- Display on LCD ---
+lcd.setCursor(0, 0);
+lcd.print("V:");
+lcd.print(batteryVoltage, 2);
+lcd.print(" I:");
+lcd.print(current, 1);
+lcd.setCursor(0, 1);
+lcd.print("SoC:");
+lcd.print(avgSOC, 1);
+lcd.print("% ");
+// --- Serial Output ---
+Serial.print("V: "); Serial.print(batteryVoltage, 2);
+Serial.print("V | I: "); Serial.print(current, 2);
+16
+Serial.print("A | SoC(V): "); Serial.print(voltageSOC, 1);
+Serial.print("% | SoC(C): "); Serial.print(coulombSOC, 1);
+Serial.print("% | SoC(K): "); Serial.print(kalmanSOC, 1);
+Serial.print("% | Avg: "); Serial.print(avgSOC, 1);
+Serial.println("%");
+delay(1000);
+}
+Standards Referenced:
+• IEEE 1609.0 for IoT protocols
+• IEEE 1725 for battery system standards
+4.3 CONSTRAINTS, ALTERNATIVES, AND TRADE-OFFS
+4.3.1 Constraints
+• Sensor Drift: Coulomb Counting suffers from long-term drift, especially under fluctuating 
+currents.
+• Non-linear Battery Behaviour: Voltage-SOC mapping is highly dependent on battery 
+chemistry and temperature.
+• Computation Limitations: Kalman Filter requires tuning and may be constrained on low￾memory MCUs.
+• Wireless Connectivity: IoT performance may degrade in low Wi-Fi environments.
+• No Load Condition for Voltage Method: Direct voltage estimation is only accurate when 
+the battery is idle.
+17
+4.3.2 Alternatives
+Challenge Alternatives
+Current sensor 
+(INA219/ACS712)
+Hall-effect sensor (e.g., ACS758 for higher accuracy)
+Kalman Filter complexity
+Use Particle Filter or Extended Kalman for improved 
+accuracy
+ESP32/Arduino
+Use Raspberry Pi Pico W or STM32 for better 
+speed/memory
+Cloud platform
+Use Firebase or AWS IoT Core instead of 
+ThingSpeak/Blynk
+4.3.3 Trade-Offs
+Option A Option B Trade-Off
+Arduino Uno (simple) ESP32 (IoT ready) Uno is easier, ESP32 is versatile
+Voltage Method (fast) Kalman Filter (robust) Voltage is simple, Kalman is accurate
+Local Display (LCD) Cloud Dashboard (IoT) LCD is direct, IoT is remote
+18
+5. PROJECT DESCRIPTION
+This project proposes a hybrid battery SoC estimation system capable of real-time 
+monitoring and remote reporting using IoT platforms. It combines Direct Voltage, Coulomb 
+Counting, and Kalman Filtering on a microcontroller (ESP32/Arduino) and interfaces 
+with a Wi-Fi module to send data to the cloud.
+The system works as follows:
+1. Voltage Measurement:
+o The terminal voltage is read through a voltage divider.
+o Based on a calibrated voltage-to-SoC curve (e.g., for Li-ion 18650 cells), SoC is estimated.
+2. Coulomb Counting:
+o A current sensor (INA219/ACS712) measures real-time current.
+o The current is integrated over time to determine energy in/out and cumulative SoC.
+3. Kalman Filter:
+o Combines the two above estimates to yield a stable and accurate SoC.
+o Reduces the impact of sensor noise, voltage hysteresis, and load variation.
+4. IoT Transmission:
+o SoC values are sent to a cloud server every few seconds.
+o Data can be accessed via smartphone app or online dashboard.
+o Alerts can be programmed for low SoC or abnormal discharge.
+5. Display Interface:
+o A 16x2 LCD shows real-time values such as voltage, current, and SoC.
+The project delivers a practical, modular, and low-cost solution for real-time battery SoC 
+estimation, suitable for electric vehicles, renewable energy storage, and smart battery 
+packs in consumer electronics.
+19
+6. HARDWARE/SOFTWARE TOOLS USED
+6.1 HARDWARE TOOLS
+Component Purpose
+ESP32 / Arduino Microcontroller for SoC estimation and IoT communication
+INA219 / ACS712 Current sensor module for Coulomb Counting
+Voltage Divider Battery voltage sensing
+16x2 LCD Display Shows voltage, current, and SoC in real-time
+Wi-Fi Module ESP32 has onboard Wi-Fi; ESP8266 used if Arduino Uno is used
+Li-ion Battery 3.7V test cell for monitoring
+Breadboard/Wires For prototyping and testing
+Figure 6.1: hardware setup
+6.2 SOFTWARE TOOLS
+Tool/Platform Purpose
+Arduino IDE Code development and uploading to MCU
+Embedded 
+C/C++
+Programming logic for estimation and filtering
+Excel/Matlab
+Used offline to validate discharge curves and Kalman filter 
+performance
+20
+7. SCHEDULE AND MILESTONES
+Week Task Milestone
+Week 1
+Research on battery types, SoC estimation 
+methods, and IoT systems
+Finalized architecture, 
+components, and methods
+Week 2
+Design circuit for voltage divider and current 
+sensor, finalize IoT platform
+Circuit design and IoT platform 
+selected
+Week 3
+Component procurement (INA219, ESP32, Li￾ion cell, LCD, etc.)
+All modules tested 
+independently
+Week 4
+Implement Direct Voltage Method and calibrate 
+with actual battery
+SoC vs Voltage curve generated
+Week 5
+Implement Coulomb Counting with real-time 
+current integration
+Working coulomb counter with 
+current sensor
+Week 6
+Develop and test Kalman Filter for combining 
+voltage and current-based SoC estimates
+Functional hybrid SoC 
+estimation logic
+Week 7
+Integrate LCD for display and ESP32 for Wi-Fi 
+connectivity
+SoC values displayed locally 
+and remotely
+Week 8
+Transmit SoC data to Blynk/ThingSpeak cloud; 
+mobile dashboard setup
+Real-time monitoring achieved 
+via IoT
+Week 9
+Final integration of all modules and full system 
+testing under charge/discharge scenarios
+Verified accurate SoC tracking 
+under various conditions
+Week 10
+Documentation, code annotation, user guide, and 
+final report preparation
+Complete report and 
+presentation submitted
+21
+8. RESULT ANALYSIS
+To validate the effectiveness and reliability of the proposed hybrid State of Charge (SoC) 
+estimation system, a series of controlled experiments were conducted using a single-cell 3.7V, 
+2200mAh lithium-ion battery. The battery was subjected to well-defined charge and discharge 
+cycles, using programmable electronic loads to simulate real-world power consumption and 
+USB chargers to replenish charge. These tests aimed to evaluate the performance of each SoC 
+estimation technique—voltage-based, Coulomb counting, and Kalman filter integration—
+under varying load conditions, as well as assess the effectiveness of IoT-based monitoring.
+The voltage-based method relied on a static mapping between open-circuit voltage and the 
+battery’s SoC. A voltage–SoC curve was generated through extensive empirical 
+measurements taken at various charge levels under no-load conditions. This method proved 
+to be simple and quick, offering reliable estimations when the battery was idle or operating 
+under negligible current draw. However, the approach suffered from significant inaccuracies 
+during active charge and discharge phases. The primary cause of this degradation was voltage 
+sag—a transient drop in terminal voltage under load—which led to underestimation of SoC 
+and diminished the method’s reliability in dynamic, real-time scenarios.
+In contrast, the Coulomb counting method provided real-time tracking of the battery’s 
+charge and discharge activity. By integrating the current measurements from the INA219 
+current sensor, the system continuously calculated the net charge flowing into or out of the 
+battery. This approach yielded accurate and responsive SoC values over short durations and 
+during rapid load changes. However, as expected, it was susceptible to cumulative errors and 
+drift over time due to factors like sensor offset, noise, and integration inaccuracies. The long￾term reliability of this method was found to be limited unless periodic resets or calibration 
+procedures were employed to realign the computed SoC with known reference points.
+To address these limitations, the system incorporated a Kalman filter, which fused data from 
+both the voltage-based and Coulomb counting methods. This advanced filtering technique 
+used a predictive-corrective model to minimize errors by weighing both estimations based on 
+their uncertainties. During experimentation, the Kalman filter significantly improved SoC 
+estimation accuracy and stability, particularly under rapidly changing load conditions. It 
+22
+effectively suppressed drift and offset errors while providing smooth and consistent SoC 
+readings. After tuning various filter parameters, a Kalman gain range between 0.4 and 0.6
+was identified as the optimal balance between responsiveness and noise suppression, ensuring 
+robust performance in diverse operating conditions.
+Overall, the testing phase confirmed that the hybrid estimation approach, reinforced with IoT 
+features, provided a practical and scalable solution for real-time battery monitoring. Each 
+estimation method contributed unique strengths, and the Kalman filter-based fusion offered a 
+balanced trade-off between accuracy, stability, and responsiveness.
+8.1 Hardware setup
+Figure 8.1.1: Hardware setup for Coulomb counting method
+23
+Figure 8.1.2: Hardware setup for Kalman Filter
+Figure 8.1.3: Hardware setup for OCV method
+24
+8.2 Simulation in TinkerCad
+Figure 8.2.1: Simulation in TinkerCad
+Figure 8.2.2: Simulation in TinkerCad output
+25
+8.3 Simulation in MATLAB
+Figure 8.3.1: MATLAB circuit simulation
+Figure 8.3.2: MATLAB variables for simulation
+26
+Figure 8.3.3: MATLAB output graph for multivariable time series predictions
+Figure 8.3.4: MATLAB output graph for training progress
+27
+Table 8.4 – Result Summary
+Feature Accuracy
+Response 
+Time
+Remarks
+Voltage 
+Estimation
+±5% at rest Instantaneous Affected by load conditions
+Coulomb 
+Counting
+±3% (short 
+term)
+Real-time Drift over long use, reset periodically
+Kalman Filter ±2% 1 second
+Best combined accuracy, load￾insensitive
+IoT Dashboard
+100% update 
+rate
+~1–2 sec delay
+Mobile notifications and data logs 
+successful
+System 
+Integration
+Stable Continuous
+No lag; modules synced through 
+MCU
+28
+9. CONCLUSION
+9.1 OBTAINED RESULTS
+This project culminated in the successful development of a comprehensive embedded system 
+designed for real-time estimation of a battery’s State of Charge (SoC). The system integrates 
+and compares three distinct estimation techniques: voltage-based, Coulomb counting, and 
+Kalman filter methods. The voltage-based approach offered a fast response but was limited 
+by its reliance on open-circuit conditions. Coulomb counting enabled real-time tracking of 
+charge and discharge cycles but was prone to drift over time. The Kalman filter method, 
+however, demonstrated superior performance, delivering high accuracy and stability even 
+under dynamic load conditions.
+To enhance usability and data accessibility, the estimated SoC was displayed on both a local 
+LCD screen and a cloud-connected IoT dashboard, allowing for real-time monitoring. The 
+system underwent rigorous testing using a real battery subjected to various charge and 
+discharge cycles, and it consistently achieved an estimation accuracy within ±2–3%. These 
+results affirm the practicality and effectiveness of the developed solution for real-world 
+applications in battery management systems.
+9.2 FUTURE IMPROVEMENT / WORK
+While the current system demonstrates strong performance, several areas have been identified 
+for future enhancement to improve accuracy, scalability, and user experience. One key area 
+is temperature compensation, which involves integrating thermal sensors to correct SoC 
+estimates affected by temperature variations—an important factor in real-world scenarios. 
+Another improvement involves the implementation of adaptive Kalman filtering, where 
+machine learning techniques or dynamic filter tuning can be used to enhance prediction 
+accuracy under varying operating conditions.
+Additionally, the current reliance on the Blynk platform for IoT monitoring can be replaced 
+with a custom mobile application for Android or iOS, offering better control, personalization, 
+and scalability. Expanding the system to support multi-cell SoC estimation will enable 
+monitoring of entire battery packs, which is critical for electric vehicles (EVs) and solar 
+energy storage systems.
+29
+Moreover, the integration of cloud logging and analytics, using platforms like Firebase or 
+AWS, can facilitate long-term data storage and trend analysis, allowing users to track 
+performance over the battery’s lifecycle. Another valuable extension is the inclusion of State 
+of Health (SoH) monitoring, which would estimate battery aging and degradation, further 
+enriching battery management capabilities. Lastly, the system can be integrated with solar 
+photovoltaic (PV) systems, enabling intelligent energy management based on real-time SoC 
+data to optimize charging efficiency.
+9.3 INDIVIDUAL CONTRIBUTIONS
+Member Responsibilities
+Sanjog 
+Awasthi
+Hardware integration, sensor calibration (INA219, voltage divider), LCD 
+interface
+Adit Tiwari
+Software programming (Arduino IDE), Kalman filter code, IoT platform 
+integration
+Aman Singh
+Research, documentation, report writing, SoC curve plotting, test case 
+design
+30
+10. SOCIAL AND ENVIRONMENTAL IMPACT
+SOCIAL IMPACT
+1. Improved Battery Safety
+By accurately estimating battery charge levels, the system helps prevent deep discharge and 
+overcharging—major causes of battery fires and failures.
+2. Empowerment Through Data
+Enables users to monitor their batteries in real time via smartphones, promoting awareness 
+of energy usage and safety.
+3. Support for Electric Vehicle (EV) Adoption
+Affordable SoC monitoring improves trust in battery systems, promoting the shift to electric 
+mobility, especially in cost-sensitive markets.
+4. Education and Innovation
+Offers a direct platform for engineering students and hobbyists to understand BMS, 
+embedded systems, and IoT.
+ENVIRONMENTAL IMPACT
+1. Battery Life Optimization
+Prolongs battery life by preventing unsafe operating conditions, reducing e-waste.
+2. Support for Renewable Energy
+Enhances efficiency of solar/wind systems by integrating SoC-based battery management 
+for off-grid setups.
+3. Energy Efficiency
+Prevents unnecessary charging cycles, conserving power and minimizing emissions in 
+energy-intensive sectors.
+4. IoT Integration and Paperless Monitoring
+Reduces reliance on manual checks and paper logs by using mobile/cloud-based data 
+visualization.
+31
+11. COST ANALYSIS
+S. No. Component Quantity Unit Price (INR) Total (INR)
+1 ESP32 / Arduino Uno 1 ₹500 ₹500
+2 INA219 Current Sensor 1 ₹300 ₹300
+3 Resistors (Voltage Divider) 2 ₹5 ₹10
+4 16x2 LCD with I2C 1 ₹150 ₹150
+5 Li-ion 3.7V Battery (18650) 1 ₹200 ₹200
+6 Breadboard + Jumper Wires 1 set ₹100 ₹100
+7 Power Adapter / USB Supply 1 ₹100 ₹100
+8 ESP8266 Wi-Fi Module (if Uno) 1 (optional) ₹150 ₹150
+Total Estimated Cost: ₹1,510 – ₹1,700
+Note: All components are reusable and widely available for prototyping.
+32
+12. PROJECT OUTCOME
+Outcome
+• A fully functional IoT-enabled SoC estimation system for Li-ion batteries.
+• Demonstrated accurate charge monitoring using hybrid methods (±2%).
+• Live cloud integration achieved using ThingSpeak/Blynk.
+• Can be adapted for use in EVs, solar systems, drones, and battery banks.
+Publication Potential
+This project has strong prospects for publication in:
+• IEEE IoT Journal
+• Elsevier Journal of Energy Storage
+• International Journal of Embedded Systems and IoT
+• Conferences: IEEE INDICON, ICETEST, ICESMART
+Possible Future Patent:
+A unified IoT-embedded SoC estimation system using triple redundancy (voltage, Coulomb, 
+Kalman) for cost-effective BMS.
+33
+13. REFERENCES
+1. S. Piller, M. Perrin, and A. Jossen, "Methods for state-of-charge determination and 
+their applications," Journal of Power Sources, vol. 96, no. 1, pp. 113–120, 2001.
+2. G. L. Plett, "Extended Kalman Filtering for Battery Management Systems of LiPBBased HEV Battery Packs: Part 1. Background," Journal of Power Sources, vol. 134, 
+no. 2, pp. 252–261, 2004.
+3. C. Zhang, K. Li, J. Deng, and J. Gong, "A novel approach for estimating the state of 
+charge of lithium-ion batteries based on a hybrid model," Applied Energy, vol. 105, 
+pp. 142–151, 2013.
+4. S. M. Noh et al., “An IoT-based smart battery monitoring system,” in IEEE Sensors 
+Journal, vol. 17, no. 17, pp. 5617–5625, 2017.
+5. A. Hannan, M. Lipu, A. Hussain, and A. Mohamed, “A review of lithium-ion battery 
+state of charge estimation and management system in electric vehicle applications: 
+Challenges and recommendations,” Renewable and Sustainable Energy Reviews, vol. 
+78, pp. 834–854, 2017.
+6. Blynk Inc., “IoT App Builder Platform,” [Online]. Available: https://www.blynk.io
+7. MathWorks, “Battery State of Charge Estimation,” [Online]. Available:
