@@ -1,0 +1,70 @@
+#include <LiquidCrystal_I2C.h>
+
+// --- LCD I2C setup ---
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Address 0x27, 16 columns, 2 rows
+
+// --- Pin Definitions ---
+#define VOLTAGE_PIN A0   // Voltage Sensor output pin (S)
+#define CURRENT_PIN A1   // ACS712 output pin
+
+// --- Voltage Divider Calibration ---
+const float R1 = 30000.0; // 30kΩ
+const float R2 = 7500.0;  // 7.5kΩ
+
+// --- ACS712 Constants ---
+const float ACS_OFFSET = 2.5;    // Output at 0A
+const float ACS_SENSITIVITY = 0.185; // 185mV/A for 5A ACS712
+
+// --- Battery Parameters ---
+const float MAX_VOLTAGE = 3.65; // Fully charged
+const float MIN_VOLTAGE = 3.00; // Fully discharged
+
+void setup() {
+  Serial.begin(9600);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("  SoC Monitor");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  // --- Read Battery Voltage ---
+  int rawV = analogRead(VOLTAGE_PIN);
+  float vOUT = (rawV * 5.0) / 1024.0;
+  float batteryVoltage = vOUT / (R2 / (R1 + R2));
+
+  // --- Read Current from ACS712 ---
+  int rawI = analogRead(CURRENT_PIN);
+  float vACS = (rawI * 5.0) / 1024.0;
+  float current = (vACS - ACS_OFFSET) / ACS_SENSITIVITY;
+
+  // --- Calculate SoC ---
+  float soc = ((batteryVoltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)) * 100.0;
+  soc = constrain(soc, 0, 100);  // Clamp to 0–100%
+
+  // --- Serial Output ---
+  Serial.print("Voltage: ");
+  Serial.print(batteryVoltage, 2);
+  Serial.print(" V | Current: ");
+  Serial.print(current, 2);
+  Serial.print(" A | SoC: ");
+  Serial.print(soc, 1);
+  Serial.println(" %");
+
+  // --- LCD Output ---
+  lcd.setCursor(0, 0);
+  lcd.print("V:");
+  lcd.print(batteryVoltage, 2);
+  lcd.print("V I:");
+  lcd.print(current, 1);
+  lcd.print("A");
+
+  lcd.setCursor(0, 1);
+  lcd.print("SoC: ");
+  lcd.print(soc, 1);
+  lcd.print("%     ");
+
+  delay(1000);
+}
