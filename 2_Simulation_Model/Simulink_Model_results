@@ -1,0 +1,6 @@
+Parameters for LiFePO₄ used:
+Nominal Voltage = 3.2V, Full = 3.65V
+Capacity = 2.2 Ah
+SOC calculated dynamically with voltage input
+Displayed SOC in percentage form
+Validated Arduino readings with simulation results
